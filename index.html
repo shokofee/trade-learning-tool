@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Trade & Crypto AI Dashboard</title>
+
+<!-- Chart.js library for charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+/* PAGE STYLING */
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(120deg, #0a0f35, #2d0f4a);
+    color: #fff;
+    margin: 0;
+    padding: 20px;
+}
+.container {
+    max-width: 800px;
+    margin: auto;
+    background: #11153e;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+h1 {
+    text-align: center;
+    color: #00eaff;
+}
+section {
+    margin-top: 30px;
+}
+input, button {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 15px;
+}
+button {
+    background: #00c851;
+    border: none;
+    color: white;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: 0.3s ease;
+}
+button:hover {
+    background: #007e33;
+}
+.crypto-list {
+    display: flex;
+    justify-content: space-evenly;
+    margin-top: 15px;
+    font-size: 17px;
+}
+.crypto-item {
+    background: #1e2450;
+    padding: 8px 12px;
+    border-radius: 8px;
+    text-align: center;
+}
+.chart-box {
+    background: #0a0e30;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+.output {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 7px;
+    background: #1a1f4d;
+    font-weight: bold;
+}
+.disclaimer {
+    font-size: 12px;
+    color: #ccc;
+    text-align: center;
+    margin-top: 20px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Trade Prediction & Crypto Live AI</h1>
+
+<!-- LIVE PRICE DISPLAY -->
+<section>
+    <h2>📈 Live Crypto Prices</h2>
+    <div id="cryptoPrices" class="crypto-list"></div>
+    <div class="chart-box">
+        <canvas id="btcChart"></canvas>
+    </div>
+</section>
+
+<!-- AI PREDICTION -->
+<section>
+    <h2>🤖 Trade Prediction</h2>
+    <input type="number" id="buyPredict" placeholder="Enter Buy Price">
+    <button onclick="predictAI()">Predict Outcome</button>
+    <div id="predictionOutput" class="output"></div>
+</section>
+
+<!-- PROFIT/LOSS CALCULATOR -->
+<section>
+    <h2>💰 Profit & Loss Calculator</h2>
+    <input type="number" id="buyCalc" placeholder="Buy Price">
+    <input type="number" id="sellCalc" placeholder="Sell Price">
+    <input type="number" id="qtyCalc" placeholder="Quantity">
+    <button onclick="calcResult()">Calculate Result</button>
+    <div id="calcOutput" class="output"></div>
+</section>
+
+<div class="disclaimer">
+⚠️ This is an educational project only. It does NOT provide financial advice.
+</div>
+</div>
+
+<script>
+// --- LIVE CRYPTO PRICES SECTION ---
+const coinIds = ["bitcoin","ethereum","dogecoin"];
+const priceDisplay = document.getElementById("cryptoPrices");
+let btcChart; // chart object
+
+// Fetch current price and show
+async function loadCryptoPrices() {
+    try {
+        const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinIds.join(",")}&vs_currencies=usd`);
+        const data = await response.json();
+        priceDisplay.innerHTML = "";
+        coinIds.forEach(id => {
+            priceDisplay.innerHTML += `
+            <div class="crypto-item">
+                <strong>${id.charAt(0).toUpperCase() + id.slice(1)}</strong><br>
+                $${data[id].usd}
+            </div>`;
+        });
+    } catch (e) {
+        priceDisplay.innerHTML = "Error loading prices...";
+    }
+}
+
+// Prepare Bitcoin chart
+async function loadBtcChart() {
+    try {
+        const r = await fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=1");
+        const chartData = await r.json();
+        const labels = chartData.prices.map(p => new Date(p[0]).getHours()+":"+new Date(p[0]).getMinutes());
+        const values = chartData.prices.map(p => p[1]);
+
+        if (btcChart) btcChart.destroy();
+        const ctx = document.getElementById("btcChart").getContext("2d");
+        btcChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: "BTC Last 24h",
+                    data: values,
+                    borderColor: "#00ffcc",
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { display: false },
+                    y: { beginAtZero: false }
+                }
+            }
+        });
+    } catch (e) {
+        console.error("Chart Load Error", e);
+    }
+}
+
+// initial load + update every minute
+loadCryptoPrices();
+loadBtcChart();
+setInterval(loadCryptoPrices, 30000);
+setInterval(loadBtcChart, 60000);
+
+// --- AI PREDICTION SECTION ---
+function predictAI(){
+    const buyVal = parseFloat(document.getElementById("buyPredict").value);
+    const out = document.getElementById("predictionOutput");
+    if (isNaN(buyVal) || buyVal <= 0) {
+        out.innerHTML = "🛑 Enter valid buy price!";
+        return;
+    }
+    const chance = Math.random();
+    let message = "";
+    if (chance > 0.6) {
+        message = "🤖 Prediction: Likely PROFIT 📈 — positive potential!";
+    } else if (chance < 0.4) {
+        message = "🤖 Prediction: Possible LOSS 📉 — take caution!";
+    } else {
+        message = "🤖 Prediction: Market unclear 🤔 — uncertain.";
+    }
+    out.innerHTML = message;
+}
+
+// --- PROFIT / LOSS CALCULATOR --
+function calcResult() {
+    const b = parseFloat(document.getElementById("buyCalc").value);
+    const s = parseFloat(document.getElementById("sellCalc").value);
+    const q = parseFloat(document.getElementById("qtyCalc").value);
+    const out = document.getElementById("calcOutput");
+    if (isNaN(b) || isNaN(s) || isNaN(q) || q <= 0) {
+        out.innerHTML = "🛑 Enter valid numbers in all fields!";
+        return;
+    }
+    const profit = (s - b) * q;
+    if (profit > 0) {
+        out.innerHTML = "💵 PROFIT: $" + profit.toFixed(2);
+    } else if (profit < 0) {
+        out.innerHTML = "📉 LOSS: $" + Math.abs(profit).toFixed(2);
+    } else {
+        out.innerHTML = "⚖️ No profit, no loss.";
+    }
+}
+</script>
+
+</body>
+</html>
