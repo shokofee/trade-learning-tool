@@ -2,7 +2,6 @@
 <html>
 <head>
 <title>Trade Analysis Tool</title>
-
 <style>
 body {
     font-family: Arial;
@@ -64,30 +63,21 @@ Not financial advice.
 
 <script>
 function analyze() {
-    let buy = buy.value;
-    let sell = sell.value;
-    let qty = qty.value;
+    // Get input values and convert to numbers
+    let buy = Number(document.getElementById("buy").value);
+    let sell = Number(document.getElementById("sell").value);
+    let qty = Number(document.getElementById("qty").value);
+
+    let resultBox = document.getElementById("out");
 
     if (!buy || !sell || !qty) {
-        out.innerHTML = "Please enter all values.";
-        out.style.background = "#ffe5e5";
+        resultBox.innerHTML = "Please enter all values.";
+        resultBox.style.background = "#ffe5e5";
         return;
     }
 
-    let p = (sell - buy) * qty;
+    let profit = (sell - buy) * qty;
 
-    if (p > 0) {
-        out.innerHTML = "PROFIT ✔<br>Amount: " + p;
-        out.style.background = "#e5ffe5";
-    } else if (p < 0) {
-        out.innerHTML = "LOSS ✖<br>Amount: " + p;
-        out.style.background = "#ffe5e5";
-    } else {
-        out.innerHTML = "NO PROFIT NO LOSS";
-        out.style.background = "#e5e5ff";
-    }
-}
-</script>
-
-</body>
-</html>
+    if (profit > 0) {
+        resultBox.innerHTML = "PROFIT ✔<br>Amount: " + profit;
+        re
