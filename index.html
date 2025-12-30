@@ -2,216 +2,205 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Trading AI Dashboard (Education)</title>
-
-<!-- Chart.js + Financial Candlestick Plugin -->
+<title>AI Trading Predictor Simulator</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial"></script>
-
 <style>
-body {
-    margin: 0;
+  body {
     font-family: Arial, sans-serif;
-    background: #0b0f1a;
+    background-color: #0f0f0f;
     color: #fff;
-}
-
-.container {
-    max-width: 1000px;
-    margin: auto;
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    background-color: #1f1f1f;
     padding: 20px;
-}
-
-h1 {
     text-align: center;
-    color: #00ffcc;
-}
-
-.card {
-    background: #12172b;
-    border-radius: 10px;
+    font-size: 28px;
+    color: #00ff00;
+  }
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    padding: 20px;
+  }
+  .card {
+    background-color: #1a1a1a;
     padding: 15px;
-    margin-top: 20px;
-}
-
-input, select, button {
-    width: 100%;
+    margin: 10px;
+    border-radius: 10px;
+    flex: 1 1 400px;
+    max-width: 600px;
+  }
+  input, button, select {
     padding: 10px;
-    margin-top: 8px;
-    border-radius: 6px;
+    margin: 5px 0;
+    width: 100%;
+    border-radius: 5px;
     border: none;
-    font-size: 14px;
-}
-
-button {
-    background: #00c853;
-    color: #fff;
-    cursor: pointer;
-}
-
-button:hover {
-    background: #009624;
-}
-
-.output {
-    margin-top: 10px;
-    padding: 12px;
-    border-radius: 6px;
-    background: #1a2040;
+  }
+  button {
+    background-color: #00ff00;
+    color: #000;
     font-weight: bold;
-}
-
-.patterns {
-    columns: 2;
-    font-size: 14px;
-}
-
-.disclaimer {
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #00cc00;
+  }
+  canvas {
+    background-color: #000;
+    border-radius: 10px;
+    margin-top: 10px;
+  }
+  h2 {color: #ff9900;}
+  p.disclaimer {
     font-size: 12px;
-    text-align: center;
-    color: #aaa;
-    margin-top: 25px;
-}
+    color: #888;
+    margin-top: 20px;
+  }
 </style>
 </head>
-
 <body>
+
+<header>AI Trading Predictor Simulator</header>
+
 <div class="container">
-<h1>📊 Trading AI Dashboard</h1>
 
-<!-- LIVE CANDLESTICK CHART -->
-<div class="card">
-<h2>Live Bitcoin Trading Chart</h2>
-<canvas id="chart" height="300"></canvas>
-</div>
+  <!-- AI Predictor -->
+  <div class="card">
+    <h2>AI Trade Predictor</h2>
+    <label>Enter your trade amount ($):</label>
+    <input type="number" id="tradeAmount" placeholder="100">
+    <button onclick="predictTrade()">Predict Profit/Loss</button>
+    <p id="prediction">Prediction will appear here.</p>
+  </div>
 
-<!-- AI PREDICTOR -->
-<div class="card">
-<h2>AI Trade Predictor</h2>
-<select id="trend">
-    <option value="">Market Trend?</option>
-    <option>Bullish</option>
-    <option>Bearish</option>
-    <option>Sideways</option>
-</select>
+  <!-- Calculator -->
+  <div class="card">
+    <h2>Profit/Loss Calculator</h2>
+    <input type="number" id="buyPrice" placeholder="Buy Price">
+    <input type="number" id="sellPrice" placeholder="Sell Price">
+    <input type="number" id="quantity" placeholder="Quantity">
+    <button onclick="calculateProfit()">Calculate</button>
+    <p id="calcResult">Result will appear here.</p>
+  </div>
 
-<select id="volume">
-    <option value="">Volume Strength?</option>
-    <option>High</option>
-    <option>Medium</option>
-    <option>Low</option>
-</select>
+  <!-- Live Graph -->
+  <div class="card">
+    <h2>Live Bitcoin Chart</h2>
+    <canvas id="btcChart" height="200"></canvas>
+  </div>
 
-<select id="risk">
-    <option value="">Risk Level?</option>
-    <option>Low</option>
-    <option>Medium</option>
-    <option>High</option>
-</select>
-
-<button onclick="predict()">Predict Trade</button>
-<div id="predictOut" class="output"></div>
-</div>
-
-<!-- TRADING PATTERNS -->
-<div class="card">
-<h2>📘 Trading Patterns (Educational)</h2>
-<div class="patterns">
-• Head and Shoulders<br>
-• Inverse Head and Shoulders<br>
-• Double Top<br>
-• Double Bottom<br>
-• Triple Top<br>
-• Triple Bottom<br>
-• Cup and Handle<br>
-• Ascending Triangle<br>
-• Descending Triangle<br>
-• Symmetrical Triangle<br>
-• Bull Flag<br>
-• Bear Flag<br>
-• Bull Pennant<br>
-• Bear Pennant<br>
-• Rising Wedge<br>
-• Falling Wedge<br>
-• Rectangle Pattern<br>
-• Support & Resistance<br>
-• Breakout<br>
-• Fake Breakout<br>
-• Trendline Bounce<br>
-• Gap Trading
-</div>
-</div>
-
-<div class="disclaimer">
-⚠️ Educational project only. This AI is a simulation and NOT financial advice.
-</div>
+  <!-- Patterns (example red/green bars) -->
+  <div class="card">
+    <h2>Trading Patterns</h2>
+    <canvas id="patternChart" height="200"></canvas>
+  </div>
 
 </div>
+
+<p class="disclaimer">
+Disclaimer: This project is for educational purposes only. Trades and predictions are simulated. Investing in real markets involves risk and can result in loss.
+</p>
 
 <script>
-let chart;
-
-// LOAD REAL OHLC DATA FROM COINGECKO
-async function loadChart() {
-    const res = await fetch("https://api.coingecko.com/api/v3/coins/bitcoin/ohlc?vs_currency=usd&days=1");
-    const data = await res.json();
-
-    const candles = data.map(d => ({
-        x: new Date(d[0]),
-        o: d[1],
-        h: d[2],
-        l: d[3],
-        c: d[4]
-    }));
-
-    const ctx = document.getElementById("chart").getContext("2d");
-
-    chart = new Chart(ctx, {
-        type: 'candlestick',
-        data: {
-            datasets: [{
-                label: "BTC/USD",
-                data: candles,
-                color: {
-                    up: '#00c853',
-                    down: '#d50000',
-                    unchanged: '#999'
-                }
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } }
-        }
-    });
-}
-
-loadChart();
-
-// SIMPLE AI LOGIC (SAFE)
-function predict() {
-    const trend = document.getElementById("trend").value;
-    const volume = document.getElementById("volume").value;
-    const risk = document.getElementById("risk").value;
-    const out = document.getElementById("predictOut");
-
-    if (!trend || !volume || !risk) {
-        out.innerHTML = "Please select all options.";
+// --------------------- AI Predictor ---------------------
+function predictTrade() {
+    const amount = parseFloat(document.getElementById('tradeAmount').value);
+    if(isNaN(amount) || amount <= 0) {
+        alert("Enter a valid amount");
         return;
     }
-
-    let msg = "AI Analysis: ";
-
-    if (trend === "Bullish" && volume === "High" && risk !== "Low") {
-        msg += "Possible PROFIT 📈 (strong conditions)";
-    } else if (trend === "Bearish" && volume === "High") {
-        msg += "High LOSS risk 📉 (downtrend)";
+    // Simple random predictor
+    const profitChance = Math.random();
+    let predictionText = "";
+    if(profitChance < 0.5) {
+        predictionText = `AI predicts a LOSS. You might lose ~$${(amount * (Math.random()*0.5)).toFixed(2)}.`;
     } else {
-        msg += "Uncertain market 🤔 (wait & observe)";
+        predictionText = `AI predicts a PROFIT. You might gain ~$${(amount * (Math.random()*0.5)).toFixed(2)}.`;
     }
-
-    out.innerHTML = msg;
+    document.getElementById('prediction').innerText = predictionText;
 }
+
+// --------------------- Profit Calculator ---------------------
+function calculateProfit() {
+    const buy = parseFloat(document.getElementById('buyPrice').value);
+    const sell = parseFloat(document.getElementById('sellPrice').value);
+    const qty = parseFloat(document.getElementById('quantity').value);
+    if(isNaN(buy) || isNaN(sell) || isNaN(qty)) {
+        alert("Enter valid numbers!");
+        return;
+    }
+    const profit = (sell - buy) * qty;
+    document.getElementById('calcResult').innerText = `Your profit/loss is $${profit.toFixed(2)}`;
+}
+
+// --------------------- Live Bitcoin Chart ---------------------
+const btcCtx = document.getElementById('btcChart').getContext('2d');
+const btcData = {
+    labels: [],
+    datasets: [{
+        label: 'BTC Price',
+        data: [],
+        borderColor: '#00ff00',
+        backgroundColor: 'rgba(0,255,0,0.2)',
+        tension: 0.3
+    }]
+};
+const btcChart = new Chart(btcCtx, {
+    type: 'line',
+    data: btcData,
+    options: {
+        scales: {
+            x: { ticks: {color: '#fff'} },
+            y: { ticks: {color: '#fff'} }
+        },
+        plugins: { legend: { labels: {color:'#fff'}}}
+    }
+});
+
+// Fetch live BTC price every minute
+async function updateBTCChart() {
+    try {
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,cardano&vs_currencies=usd');
+        const data = await res.json();
+        const time = new Date().toLocaleTimeString();
+        if(btcData.labels.length > 20) {
+            btcData.labels.shift();
+            btcData.datasets[0].data.shift();
+        }
+        btcData.labels.push(time);
+        btcData.datasets[0].data.push(data.bitcoin.usd);
+        btcChart.update();
+    } catch(err) {
+        console.log("Error fetching BTC data", err);
+    }
+}
+setInterval(updateBTCChart, 60000);
+updateBTCChart();
+
+// --------------------- Trading Pattern Chart ---------------------
+const patternCtx = document.getElementById('patternChart').getContext('2d');
+const patternChart = new Chart(patternCtx, {
+    type: 'bar',
+    data: {
+        labels: Array.from({length:20}, (_,i)=>`Pattern ${i+1}`),
+        datasets: [{
+            label: 'Red/Green Pattern',
+            data: Array.from({length:20}, ()=>Math.floor(Math.random()*100)),
+            backgroundColor: Array.from({length:20}, ()=>Math.random()>0.5?'#ff0000':'#00ff00')
+        }]
+    },
+    options: {
+        scales: {
+            x: { ticks: {color:'#fff'} },
+            y: { ticks: {color:'#fff'} }
+        },
+        plugins: { legend: { labels: {color:'#fff'}} }
+    }
+});
 </script>
 
 </body>
