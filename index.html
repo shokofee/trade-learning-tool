@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Trade Analysis Tool</title>
+<style>
+body {
+    font-family: Arial;
+    background: linear-gradient(to right, #6a11cb, #2575fc);
+    padding: 30px;
+}
+.container {
+    max-width: 450px;
+    margin: auto;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+}
+h1 {
+    text-align: center;
+}
+input, button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 14px;
+}
+button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #218838;
+}
+.result {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+.disclaimer {
+    font-size: 12px;
+    color: gray;
+    margin-top: 15px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Trade Analysis Tool</h1>
+
+<input type="number" id="buy" placeholder="Buy Price">
+<input type="number" id="sell" placeholder="Sell Price">
+<input type="number" id="qty" placeholder="Quantity">
+
+<button id="analyzeBtn">Analyze Trade</button>
+
+<div class="result" id="output"></div>
+
+<div class="disclaimer">
+⚠️ Educational project only. Not financial advice.
+</div>
+</div>
+
+<script>
+// Wait until the button is clicked
+document.getElementById("analyzeBtn").addEventListener("click", function() {
+    let buy = Number(document.getElementById("buy").value);
+    let sell = Number(document.getElementById("sell").value);
+    let qty = Number(document.getElementById("qty").value);
+    let output = document.getElementById("output");
+
+    if (!buy || !sell || !qty) {
+        output.innerHTML = "Please enter all values!";
+        output.style.background = "#ffe5e5";
+        return;
+    }
+
+    let profit = (sell - buy) * qty;
+
+    if (profit > 0) {
+        output.innerHTML = "PROFIT ✔<br>Amount: " + profit;
+        output.style.background = "#e5ffe5";
+    } else if (profit < 0) {
+        output.innerHTML = "LOSS ✖<br>Amount: " + profit;
+        output.style.background = "#ffe5e5";
+    } else {
+        output.innerHTML = "NO PROFIT NO LOSS";
+        output.style.background = "#e5e5ff";
+    }
+});
+</script>
+
+</body>
+</html>
