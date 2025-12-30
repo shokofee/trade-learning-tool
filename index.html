@@ -60,6 +60,18 @@
     color: #888;
     margin-top: 20px;
   }
+  .pattern-img {
+    width: 50px;
+    height: 50px;
+    display: inline-block;
+    margin: 5px;
+    background-color: #222;
+    border-radius: 5px;
+    text-align: center;
+    line-height: 50px;
+    font-size: 12px;
+    color: #fff;
+  }
 </style>
 </head>
 <body>
@@ -71,10 +83,25 @@
   <!-- AI Predictor -->
   <div class="card">
     <h2>AI Trade Predictor</h2>
-    <label>Enter your trade amount ($):</label>
-    <input type="number" id="tradeAmount" placeholder="100">
+    <label>Coin Type:</label>
+    <select id="predictCoin">
+      <option value="BTC">Bitcoin (BTC)</option>
+      <option value="ETH">Ethereum (ETH)</option>
+      <option value="ADA">Cardano (ADA)</option>
+      <option value="XRP">XRP</option>
+      <option value="DOGE">Dogecoin (DOGE)</option>
+      <option value="LTC">Litecoin (LTC)</option>
+      <option value="BNB">BNB</option>
+      <option value="SOL">Solana (SOL)</option>
+      <option value="DOT">Polkadot (DOT)</option>
+      <option value="AVAX">Avalanche (AVAX)</option>
+    </select>
+    <input type="number" id="predictBuy" placeholder="Buy Price ($)">
+    <input type="number" id="predictSell" placeholder="Sell Price ($)">
+    <input type="number" id="predictQty" placeholder="Quantity">
     <button onclick="predictTrade()">Predict Profit/Loss</button>
     <p id="prediction">Prediction will appear here.</p>
+    <p id="analyzer">Analyzer info will appear here.</p>
   </div>
 
   <!-- Calculator -->
@@ -84,19 +111,19 @@
     <input type="number" id="sellPrice" placeholder="Sell Price">
     <input type="number" id="quantity" placeholder="Quantity">
     <button onclick="calculateProfit()">Calculate</button>
-    <p id="calcResult">Result will appear here.</p>
+    <p id="calcResult">Result will appear here</p>
   </div>
 
-  <!-- Live Graph -->
+  <!-- Live Coin Chart -->
   <div class="card">
-    <h2>Live Bitcoin Chart</h2>
-    <canvas id="btcChart" height="200"></canvas>
+    <h2>Live Coin Prices</h2>
+    <canvas id="coinChart" height="250"></canvas>
   </div>
 
-  <!-- Patterns (example red/green bars) -->
+  <!-- Trading Patterns Cheat Sheet -->
   <div class="card">
-    <h2>Trading Patterns</h2>
-    <canvas id="patternChart" height="200"></canvas>
+    <h2>Trading Patterns Cheat Sheet</h2>
+    <div id="patternsContainer"></div>
   </div>
 
 </div>
@@ -108,98 +135,114 @@ Disclaimer: This project is for educational purposes only. Trades and prediction
 <script>
 // --------------------- AI Predictor ---------------------
 function predictTrade() {
-    const amount = parseFloat(document.getElementById('tradeAmount').value);
-    if(isNaN(amount) || amount <= 0) {
-        alert("Enter a valid amount");
+    const coin = document.getElementById('predictCoin').value;
+    const buy = parseFloat(document.getElementById('predictBuy').value);
+    const sell = parseFloat(document.getElementById('predictSell').value);
+    const qty = parseFloat(document.getElementById('predictQty').value);
+
+    if (!buy || !sell || !qty || buy <= 0 || sell <= 0 || qty <= 0) {
+        alert("Enter valid numbers for trade.");
         return;
     }
-    // Simple random predictor
-    const profitChance = Math.random();
-    let predictionText = "";
-    if(profitChance < 0.5) {
-        predictionText = `AI predicts a LOSS. You might lose ~$${(amount * (Math.random()*0.5)).toFixed(2)}.`;
-    } else {
-        predictionText = `AI predicts a PROFIT. You might gain ~$${(amount * (Math.random()*0.5)).toFixed(2)}.`;
-    }
-    document.getElementById('prediction').innerText = predictionText;
+
+    const profit = (sell - buy) * qty;
+    const isProfit = Math.random() > 0.5;
+
+    document.getElementById('prediction').innerText = isProfit
+        ? `AI predicts a PROFIT on ${coin}. Possible gain: $${profit.toFixed(2)}.`
+        : `AI predicts a LOSS on ${coin}. Possible loss: $${Math.abs(profit).toFixed(2)}.`;
+
+    document.getElementById('analyzer').innerText = profit > 0
+        ? "Analyzer: Trade looks promising, but always analyze the market."
+        : "Analyzer: Caution! This trade may lead to loss.";
 }
 
-// --------------------- Profit Calculator ---------------------
+// --------------------- Profit/Loss Calculator ---------------------
 function calculateProfit() {
     const buy = parseFloat(document.getElementById('buyPrice').value);
     const sell = parseFloat(document.getElementById('sellPrice').value);
     const qty = parseFloat(document.getElementById('quantity').value);
-    if(isNaN(buy) || isNaN(sell) || isNaN(qty)) {
+
+    if (!buy || !sell || !qty) {
         alert("Enter valid numbers!");
         return;
     }
+
     const profit = (sell - buy) * qty;
     document.getElementById('calcResult').innerText = `Your profit/loss is $${profit.toFixed(2)}`;
 }
 
-// --------------------- Live Bitcoin Chart ---------------------
-const btcCtx = document.getElementById('btcChart').getContext('2d');
-const btcData = {
-    labels: [],
-    datasets: [{
-        label: 'BTC Price',
-        data: [],
-        borderColor: '#00ff00',
-        backgroundColor: 'rgba(0,255,0,0.2)',
-        tension: 0.3
-    }]
-};
-const btcChart = new Chart(btcCtx, {
-    type: 'line',
-    data: btcData,
-    options: {
-        scales: {
-            x: { ticks: {color: '#fff'} },
-            y: { ticks: {color: '#fff'} }
-        },
-        plugins: { legend: { labels: {color:'#fff'}}}
-    }
-});
+// --------------------- Live Coin Chart ---------------------
+const coinCtx = document.getElementById('coinChart').getContext('2d');
+const coins = ['bitcoin','ethereum','cardano','ripple','dogecoin','litecoin','binancecoin','solana','polkadot','avalanche'];
+const coinLabels = coins.map(c => c.toUpperCase());
+let coinPrices = Array(coins.length).fill(0);
 
-// Fetch live BTC price every minute
-async function updateBTCChart() {
-    try {
-        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,cardano&vs_currencies=usd');
-        const data = await res.json();
-        const time = new Date().toLocaleTimeString();
-        if(btcData.labels.length > 20) {
-            btcData.labels.shift();
-            btcData.datasets[0].data.shift();
-        }
-        btcData.labels.push(time);
-        btcData.datasets[0].data.push(data.bitcoin.usd);
-        btcChart.update();
-    } catch(err) {
-        console.log("Error fetching BTC data", err);
-    }
-}
-setInterval(updateBTCChart, 60000);
-updateBTCChart();
-
-// --------------------- Trading Pattern Chart ---------------------
-const patternCtx = document.getElementById('patternChart').getContext('2d');
-const patternChart = new Chart(patternCtx, {
+const coinChart = new Chart(coinCtx, {
     type: 'bar',
     data: {
-        labels: Array.from({length:20}, (_,i)=>`Pattern ${i+1}`),
+        labels: coinLabels,
         datasets: [{
-            label: 'Red/Green Pattern',
-            data: Array.from({length:20}, ()=>Math.floor(Math.random()*100)),
-            backgroundColor: Array.from({length:20}, ()=>Math.random()>0.5?'#ff0000':'#00ff00')
+            label: 'Price (USD)',
+            data: coinPrices,
+            backgroundColor: coinPrices.map(() => '#00ff00')
         }]
     },
     options: {
+        responsive: true,
         scales: {
-            x: { ticks: {color:'#fff'} },
-            y: { ticks: {color:'#fff'} }
+            x: { ticks: { color:'#fff' } },
+            y: { ticks: { color:'#fff' } }
         },
-        plugins: { legend: { labels: {color:'#fff'}} }
+        plugins: { legend: { labels: { color:'#fff' } } }
     }
+});
+
+async function fetchCoinPrices() {
+    try {
+        const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coins.join(',')}&vs_currencies=usd`);
+        const data = await res.json();
+        coinPrices = coins.map(c => data[c].usd);
+        coinChart.data.datasets[0].data = coinPrices;
+        coinChart.update();
+    } catch(e) {
+        console.error("Error fetching coin prices:", e);
+    }
+}
+
+fetchCoinPrices(); // Fetch once (live price display)
+
+// --------------------- Trading Patterns Cheat Sheet ---------------------
+const patterns = [
+    {name:'Doji', desc:'Indecision candle', img:'🟦'},
+    {name:'Hammer', desc:'Potential reversal bullish', img:'🔨'},
+    {name:'Shooting Star', desc:'Potential reversal bearish', img:'🌟'},
+    {name:'Bullish Engulfing', desc:'Strong bullish signal', img:'🟩'},
+    {name:'Bearish Engulfing', desc:'Strong bearish signal', img:'🟥'},
+    {name:'Morning Star', desc:'Bullish reversal pattern', img:'🌅'},
+    {name:'Evening Star', desc:'Bearish reversal pattern', img:'🌇'},
+    {name:'Head & Shoulders', desc:'Trend reversal signal', img:'🧑‍🤝‍🧑'},
+    {name:'Inverse H&S', desc:'Bullish reversal', img:'🔄'},
+    {name:'Triangle', desc:'Continuation pattern', img:'🔺'},
+    {name:'Flag', desc:'Short-term trend continuation', img:'🚩'},
+    {name:'Pennant', desc:'Trend continuation', img:'📌'},
+    {name:'Double Top', desc:'Reversal bearish', img:'🔝'},
+    {name:'Double Bottom', desc:'Reversal bullish', img:'🔻'},
+    {name:'Rising Wedge', desc:'Bearish signal', img:'📈'},
+    {name:'Falling Wedge', desc:'Bullish signal', img:'📉'},
+    {name:'Cup & Handle', desc:'Bullish pattern', img:'☕'},
+    {name:'Rounding Bottom', desc:'Trend reversal', img:'🟢'},
+    {name:'Triple Top', desc:'Strong bearish reversal', img:'🔺'},
+    {name:'Triple Bottom', desc:'Strong bullish reversal', img:'🔻'}
+];
+
+const container = document.getElementById('patternsContainer');
+patterns.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'pattern-img';
+    div.title = `${p.name}: ${p.desc}`;
+    div.innerText = p.img;
+    container.appendChild(div);
 });
 </script>
 
