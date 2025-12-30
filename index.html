@@ -2,129 +2,89 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>AI Trading Predictor Simulator</title>
+<title>AI Trading Simulator</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial"></script>
 <style>
-  body {
-    font-family: Arial, sans-serif;
+body {
     background-color: #0f0f0f;
     color: #fff;
-    margin: 0;
-    padding: 0;
-  }
-  header {
+    font-family: Arial, sans-serif;
+    margin:0; padding:0;
+}
+header {
     background-color: #1f1f1f;
-    padding: 20px;
-    text-align: center;
-    font-size: 28px;
-    color: #00ff00;
-  }
-  .container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    padding: 20px;
-  }
-  .card {
+    text-align:center;
+    padding:20px;
+    font-size:28px;
+    color:#00ff00;
+}
+.container {
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-around;
+    padding:20px;
+}
+.card {
     background-color: #1a1a1a;
-    padding: 15px;
-    margin: 10px;
-    border-radius: 10px;
-    flex: 1 1 400px;
-    max-width: 600px;
-  }
-  input, button, select {
-    padding: 10px;
-    margin: 5px 0;
-    width: 100%;
-    border-radius: 5px;
-    border: none;
-  }
-  button {
-    background-color: #00ff00;
-    color: #000;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  button:hover {
-    background-color: #00cc00;
-  }
-  canvas {
-    background-color: #000;
-    border-radius: 10px;
-    margin-top: 10px;
-  }
-  h2 {color: #ff9900;}
-  p.disclaimer {
-    font-size: 12px;
-    color: #888;
-    margin-top: 20px;
-  }
-  .pattern-img {
-    width: 50px;
-    height: 50px;
-    display: inline-block;
-    margin: 5px;
-    background-color: #222;
-    border-radius: 5px;
-    text-align: center;
-    line-height: 50px;
-    font-size: 12px;
-    color: #fff;
-  }
+    border-radius:10px;
+    padding:15px;
+    margin:10px;
+    flex:1 1 500px;
+    max-width:600px;
+}
+input, button {
+    padding:10px;
+    margin:5px 0;
+    width:100%;
+    border-radius:5px;
+    border:none;
+}
+button {
+    background-color:#00ff00;
+    color:#000;
+    font-weight:bold;
+    cursor:pointer;
+}
+button:hover {background-color:#00cc00;}
+canvas {background-color:#000; border-radius:10px; margin-top:10px;}
+h2 {color:#ff9900;}
+p.disclaimer {font-size:12px; color:#888; margin-top:20px;}
 </style>
 </head>
 <body>
-
-<header>AI Trading Predictor Simulator</header>
-
+<header>AI Trading Simulator</header>
 <div class="container">
 
-  <!-- AI Predictor -->
-  <div class="card">
-    <h2>AI Trade Predictor</h2>
-    <label>Coin Type:</label>
-    <select id="predictCoin">
-      <option value="BTC">Bitcoin (BTC)</option>
-      <option value="ETH">Ethereum (ETH)</option>
-      <option value="ADA">Cardano (ADA)</option>
-      <option value="XRP">XRP</option>
-      <option value="DOGE">Dogecoin (DOGE)</option>
-      <option value="LTC">Litecoin (LTC)</option>
-      <option value="BNB">BNB</option>
-      <option value="SOL">Solana (SOL)</option>
-      <option value="DOT">Polkadot (DOT)</option>
-      <option value="AVAX">Avalanche (AVAX)</option>
-    </select>
-    <input type="number" id="predictBuy" placeholder="Buy Price ($)">
-    <input type="number" id="predictSell" placeholder="Sell Price ($)">
-    <input type="number" id="predictQty" placeholder="Quantity">
-    <button onclick="predictTrade()">Predict Profit/Loss</button>
-    <p id="prediction">Prediction will appear here.</p>
-    <p id="analyzer">Analyzer info will appear here.</p>
-  </div>
+<!-- AI Predictor -->
+<div class="card">
+<h2>AI Trade Predictor</h2>
+<input type="text" id="predictCoin" placeholder="Enter Coin Symbol (e.g., BTC)">
+<input type="number" id="predictBuy" placeholder="Buy Price ($)">
+<input type="number" id="predictSell" placeholder="Sell Price ($)">
+<input type="number" id="predictQty" placeholder="Quantity">
+<button onclick="predictTrade()">Predict Profit/Loss</button>
+<p id="prediction">Prediction will appear here.</p>
+<p id="analyzer">Analyzer info will appear here.</p>
+</div>
 
-  <!-- Calculator -->
-  <div class="card">
-    <h2>Profit/Loss Calculator</h2>
-    <input type="number" id="buyPrice" placeholder="Buy Price">
-    <input type="number" id="sellPrice" placeholder="Sell Price">
-    <input type="number" id="quantity" placeholder="Quantity">
-    <button onclick="calculateProfit()">Calculate</button>
-    <p id="calcResult">Result will appear here</p>
-  </div>
+<!-- Profit/Loss Calculator -->
+<div class="card">
+<h2>Profit/Loss Calculator</h2>
+<input type="number" id="buyPrice" placeholder="Buy Price">
+<input type="number" id="sellPrice" placeholder="Sell Price">
+<input type="number" id="quantity" placeholder="Quantity">
+<button onclick="calculateProfit()">Calculate</button>
+<p id="calcResult">Result will appear here</p>
+</div>
 
-  <!-- Live Coin Chart -->
-  <div class="card">
-    <h2>Live Coin Prices</h2>
-    <canvas id="coinChart" height="250"></canvas>
-  </div>
-
-  <!-- Trading Patterns Cheat Sheet -->
-  <div class="card">
-    <h2>Trading Patterns Cheat Sheet</h2>
-    <div id="patternsContainer"></div>
-  </div>
+<!-- Live Coin Chart -->
+<div class="card">
+<h2>Live Coin Chart</h2>
+<input type="text" id="chartCoin" placeholder="Enter Coin Symbol (e.g., BTC)">
+<button onclick="updateCoinChart()">Load Chart</button>
+<canvas id="coinChart" height="300"></canvas>
+</div>
 
 </div>
 
@@ -133,117 +93,75 @@ Disclaimer: This project is for educational purposes only. Trades and prediction
 </p>
 
 <script>
-// --------------------- AI Predictor ---------------------
+// ----------------- AI Predictor -----------------
 function predictTrade() {
-    const coin = document.getElementById('predictCoin').value;
+    const coin = document.getElementById('predictCoin').value.trim().toUpperCase();
     const buy = parseFloat(document.getElementById('predictBuy').value);
     const sell = parseFloat(document.getElementById('predictSell').value);
     const qty = parseFloat(document.getElementById('predictQty').value);
 
-    if (!buy || !sell || !qty || buy <= 0 || sell <= 0 || qty <= 0) {
-        alert("Enter valid numbers for trade.");
+    if(!coin || !buy || !sell || !qty || buy <= 0 || sell <= 0 || qty <=0){
+        alert("Enter valid data.");
         return;
     }
 
     const profit = (sell - buy) * qty;
-    const isProfit = Math.random() > 0.5;
-
+    const isProfit = Math.random()>0.5;
     document.getElementById('prediction').innerText = isProfit
-        ? `AI predicts a PROFIT on ${coin}. Possible gain: $${profit.toFixed(2)}.`
-        : `AI predicts a LOSS on ${coin}. Possible loss: $${Math.abs(profit).toFixed(2)}.`;
+        ? `AI predicts PROFIT on ${coin}. Possible gain: $${profit.toFixed(2)}.`
+        : `AI predicts LOSS on ${coin}. Possible loss: $${Math.abs(profit).toFixed(2)}.`;
 
-    document.getElementById('analyzer').innerText = profit > 0
-        ? "Analyzer: Trade looks promising, but always analyze the market."
+    document.getElementById('analyzer').innerText = profit>0 
+        ? "Analyzer: Trade looks promising, but always check the market."
         : "Analyzer: Caution! This trade may lead to loss.";
 }
 
-// --------------------- Profit/Loss Calculator ---------------------
+// ----------------- Profit/Loss Calculator -----------------
 function calculateProfit() {
     const buy = parseFloat(document.getElementById('buyPrice').value);
     const sell = parseFloat(document.getElementById('sellPrice').value);
     const qty = parseFloat(document.getElementById('quantity').value);
 
-    if (!buy || !sell || !qty) {
-        alert("Enter valid numbers!");
-        return;
-    }
+    if(!buy || !sell || !qty){alert("Enter valid numbers"); return;}
 
     const profit = (sell - buy) * qty;
-    document.getElementById('calcResult').innerText = `Your profit/loss is $${profit.toFixed(2)}`;
+    document.getElementById('calcResult').innerText = `Profit/Loss: $${profit.toFixed(2)}`;
 }
 
-// --------------------- Live Coin Chart ---------------------
-const coinCtx = document.getElementById('coinChart').getContext('2d');
-const coins = ['bitcoin','ethereum','cardano','ripple','dogecoin','litecoin','binancecoin','solana','polkadot','avalanche'];
-const coinLabels = coins.map(c => c.toUpperCase());
-let coinPrices = Array(coins.length).fill(0);
+// ----------------- Live Coin Chart -----------------
+let coinChart;
 
-const coinChart = new Chart(coinCtx, {
-    type: 'bar',
-    data: {
-        labels: coinLabels,
-        datasets: [{
-            label: 'Price (USD)',
-            data: coinPrices,
-            backgroundColor: coinPrices.map(() => '#00ff00')
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            x: { ticks: { color:'#fff' } },
-            y: { ticks: { color:'#fff' } }
-        },
-        plugins: { legend: { labels: { color:'#fff' } } }
-    }
-});
-
-async function fetchCoinPrices() {
-    try {
-        const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coins.join(',')}&vs_currencies=usd`);
+async function getCoinOHLC(coin) {
+    try{
+        const res = await fetch(`https://api.coingecko.com/api/v3/coins/${coin.toLowerCase()}/ohlc?vs_currency=usd&days=1`);
         const data = await res.json();
-        coinPrices = coins.map(c => data[c].usd);
-        coinChart.data.datasets[0].data = coinPrices;
-        coinChart.update();
-    } catch(e) {
-        console.error("Error fetching coin prices:", e);
-    }
+        // Data format: [timestamp, open, high, low, close]
+        return data.map(d=>({x:new Date(d[0]), o:d[1], h:d[2], l:d[3], c:d[4]}));
+    } catch(e){alert("Coin not found or API error"); return [];}
 }
 
-fetchCoinPrices(); // Fetch once (live price display)
+async function updateCoinChart(){
+    const coin = document.getElementById('chartCoin').value.trim().toLowerCase();
+    if(!coin){alert("Enter coin symbol"); return;}
+    const ohlc = await getCoinOHLC(coin);
+    if(ohlc.length===0) return;
 
-// --------------------- Trading Patterns Cheat Sheet ---------------------
-const patterns = [
-    {name:'Doji', desc:'Indecision candle', img:'🟦'},
-    {name:'Hammer', desc:'Potential reversal bullish', img:'🔨'},
-    {name:'Shooting Star', desc:'Potential reversal bearish', img:'🌟'},
-    {name:'Bullish Engulfing', desc:'Strong bullish signal', img:'🟩'},
-    {name:'Bearish Engulfing', desc:'Strong bearish signal', img:'🟥'},
-    {name:'Morning Star', desc:'Bullish reversal pattern', img:'🌅'},
-    {name:'Evening Star', desc:'Bearish reversal pattern', img:'🌇'},
-    {name:'Head & Shoulders', desc:'Trend reversal signal', img:'🧑‍🤝‍🧑'},
-    {name:'Inverse H&S', desc:'Bullish reversal', img:'🔄'},
-    {name:'Triangle', desc:'Continuation pattern', img:'🔺'},
-    {name:'Flag', desc:'Short-term trend continuation', img:'🚩'},
-    {name:'Pennant', desc:'Trend continuation', img:'📌'},
-    {name:'Double Top', desc:'Reversal bearish', img:'🔝'},
-    {name:'Double Bottom', desc:'Reversal bullish', img:'🔻'},
-    {name:'Rising Wedge', desc:'Bearish signal', img:'📈'},
-    {name:'Falling Wedge', desc:'Bullish signal', img:'📉'},
-    {name:'Cup & Handle', desc:'Bullish pattern', img:'☕'},
-    {name:'Rounding Bottom', desc:'Trend reversal', img:'🟢'},
-    {name:'Triple Top', desc:'Strong bearish reversal', img:'🔺'},
-    {name:'Triple Bottom', desc:'Strong bullish reversal', img:'🔻'}
-];
+    if(coinChart) coinChart.destroy();
 
-const container = document.getElementById('patternsContainer');
-patterns.forEach(p => {
-    const div = document.createElement('div');
-    div.className = 'pattern-img';
-    div.title = `${p.name}: ${p.desc}`;
-    div.innerText = p.img;
-    container.appendChild(div);
-});
+    const ctx = document.getElementById('coinChart').getContext('2d');
+    coinChart = new Chart(ctx, {
+        type: 'candlestick',
+        data: {datasets:[{label:coin.toUpperCase(), data:ohlc}]},
+        options:{
+            responsive:true,
+            plugins:{legend:{labels:{color:'#fff'}}},
+            scales:{
+                x:{ticks:{color:'#fff'}, time:{unit:'hour'}},
+                y:{ticks:{color:'#fff'}}
+            }
+        }
+    });
+}
 </script>
 
 </body>
