@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Professional Crypto Trading Simulator</title>
+<!-- Chart.js & Financial Chart Plugin -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial"></script>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: #0a0e19;
+    color: #fff;
+  }
+  header {
+    padding: 20px;
+    text-align: center;
+    background: #0f1430;
+    font-size: 30px;
+    font-weight: bold;
+    color: #00e676;
+  }
+  .main {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 15px;
+  }
+  .card {
+    background: #111833;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #000;
+    margin: 10px;
+    padding: 15px;
+    flex: 1 1 450px;
+    max-width: 600px;
+  }
+  input, select, button {
+    width: 100%;
+    margin: 8px 0;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  button {
+    background: #00e676;
+    font-weight: bold;
+    cursor: pointer;
+    color: #000;
+  }
+  button:hover {
+    background: #00c853;
+  }
+  canvas {
+    background: #0a0e19;
+    border-radius: 8px;
+  }
+  .disclaimer {
+    font-size: 12px;
+    color: #aaa;
+    text-align: center;
+    margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+
+<header>Crypto Trading Simulator — Professional Theme</header>
+
+<div class="main">
+
+  <!-- AI Predictor -->
+  <div class="card">
+    <h2>AI Trade Predictor</h2>
+    <select id="predictCoin"></select>
+    <input type="number" id="predictBuy" placeholder="Buy Price ($)">
+    <input type="number" id="predictSell" placeholder="Sell Price ($)">
+    <input type="number" id="predictQty" placeholder="Quantity">
+    <button onclick="predictTrade();">Predict Trade</button>
+    <p id="prediction"></p>
+    <p id="analyzer"></p>
+  </div>
+
+  <!-- Demo Trading -->
+  <div class="card">
+    <h2>Demo Trade Simulator</h2>
+    <input type="text" id="tradeType" placeholder="Type BUY or SELL">
+    <input type="number" id="tradePrice" placeholder="Price ($)">
+    <input type="number" id="tradeQty" placeholder="Quantity">
+    <button onclick="simulateDemo();">Simulate Trade</button>
+    <p id="demoResult"></p>
+  </div>
+
+  <!-- Chart Section -->
+  <div class="card">
+    <h2>Live Candlestick Chart</h2>
+    <input type="text" id="chartCoin" placeholder="Enter Coin Symbol (e.g., bitcoin)">
+    <button onclick="loadChart();">Load Chart</button>
+    <canvas id="cryptoChart" height="350"></canvas>
+  </div>
+
+</div>
+
+<p class="disclaimer">
+This simulator shows real crypto chart data from CoinGecko (not live tick‑by‑tick). Trades and predictions are simulated for learning only.
+</p>
+
+<script>
+// ------------------------- Populate 100+ Coins -------------------------
+const coinList = [
+ "bitcoin","ethereum","tether","bnb","usd-coin","ripple","cardano","dogecoin","polygon",
+ "solana","tron","litecoin","stellar","chainlink","ethereum-classic","vechain","filecoin",
+ "monero","tezos","theta-token","axie-infinity","vechain","dai","bitcoin-cash","shiba-inu",
+ "internet-computer","aave","algorand","cosmos","fantom","hedera-hashgraph","klay-token",
+ "quant-network","the-graph","zilliqa","elrond-erd-2","pancakeswap","uniswap","maker",
+ "compound","chiliz","sushi","true-usd","zcash","dash","decentraland","enjincoin","loopring",
+ "nem","ontology","waves","bitcoin-sv","harmony","holo","icy-peak","impossible-finance",
+ "kusama","theta-fuel"
+];// sample; expand as many as you want
+
+const predictSelect = document.getElementById("predictCoin");
+coinList.sort().forEach(c => {
+  const o = document.createElement("option");
+  o.value = c;
+  o.innerText = c.toUpperCase();
+  predictSelect.appendChild(o);
+});
+
+// ------------------------ AI Predictor ------------------------
+function predictTrade(){
+    const coin = document.getElementById("predictCoin").value;
+    const buy = parseFloat(document.getElementById("predictBuy").value);
+    const sell = parseFloat(document.getElementById("predictSell").value);
+    const qty = parseFloat(document.getElementById("predictQty").value);
+    if(!coin || !buy || !sell || !qty){
+        alert("Please enter all fields!");
+        return;
+    }
+    const profit = (sell - buy) * qty;
+    const chance = Math.random();
+    document.getElementById("prediction").innerText =
+      chance>0.5
+        ? `AI predicts PROFIT on ${coin.toUpperCase()}. Gain: $${profit.toFixed(2)}`
+        : `AI predicts LOSS on ${coin.toUpperCase()}. Loss: $${Math.abs(profit).toFixed(2)}`;
+
+    document.getElementById("analyzer").innerText =
+      profit>0 ? "Analyzer: Looks bullish but always check market!" : "Analyzer: Bearish outlook, trade carefully.";
+}
+
+// ------------------------ Demo Simulator ------------------------
+function simulateDemo(){
+    const type = document.getElementById("tradeType").value.toUpperCase();
+    const price = parseFloat(document.getElementById("tradePrice").value);
+    const qty = parseFloat(document.getElementById("tradeQty").value);
+    if(!type || !price || !qty){ alert("Fill all fields!"); return; }
+    const outcome = type==="BUY" ? `Bought $${qty} at $${price}` : `Sold $${qty} at $${price}`;
+    document.getElementById("demoResult").innerText = `Demo: ${outcome}`;
+}
+
+// ------------------------ Chart with Candlesticks ------------------------
+let cryptoChart;
+async function loadChart(){
+    const coin = document.getElementById("chartCoin").value.toLowerCase().trim();
+    if(!coin){ alert("Enter a coin name!"); return; }
+
+    try {
+        const res = await fetch(`https://api.coingecko.com/api/v3/coins/${coin}/ohlc?vs_currency=usd&days=1`);
+        const data = await res.json();
+        const cData = data.map(d => ({
+            x: new Date(d[0]),
+            o: d[1], h: d[2], l: d[3], c: d[4]
+        }));
+
+        if(cryptoChart) cryptoChart.destroy();
+        const ctx = document.getElementById("cryptoChart").getContext("2d");
+        cryptoChart = new Chart(ctx, {
+            type: "candlestick",
+            data: { datasets: [{ label: coin.toUpperCase(), data: cData }] },
+            options: {
+                responsive:true,
+                scales: {
+                  x: { ticks:{color:"#fff"} },
+                  y: { ticks:{color:"#fff"} }
+                },
+                plugins: {
+                  legend: { labels:{ color:"#fff"} }
+                }
+            }
+        });
+    } catch(e){
+        alert("Coin not found or error loading data.");
+    }
+}
+</script>
+
+</body>
+</html>
