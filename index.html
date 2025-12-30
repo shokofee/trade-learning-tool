@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Trade Analysis AI Tool</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to right, #6a11cb, #2575fc);
+    padding: 30px;
+}
+.container {
+    max-width: 500px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+h1 {
+    text-align: center;
+    color: #333;
+}
+input, button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+button:hover {
+    background-color: #218838;
+}
+.result {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+}
+.disclaimer {
+    font-size: 12px;
+    color: gray;
+    margin-top: 20px;
+    text-align: center;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Trade Analysis AI Tool</h1>
+
+<input type="number" id="buy" placeholder="Enter Buy Price">
+<input type="number" id="sell" placeholder="Enter Sell Price">
+<input type="number" id="qty" placeholder="Enter Quantity">
+
+<button id="analyzeBtn">Analyze Trade</button>
+
+<div class="result" id="output"></div>
+
+<div class="disclaimer">
+⚠️ Educational project only. Not financial advice.
+</div>
+</div>
+
+<script>
+document.getElementById("analyzeBtn").addEventListener("click", function() {
+    let buy = parseFloat(document.getElementById("buy").value);
+    let sell = parseFloat(document.getElementById("sell").value);
+    let qty = parseFloat(document.getElementById("qty").value);
+    let output = document.getElementById("output");
+
+    if (isNaN(buy) || isNaN(sell) || isNaN(qty) || qty <= 0) {
+        output.innerHTML = "⚠️ Please enter valid numbers in all fields!";
+        output.style.background = "#ffe5e5";
+        return;
+    }
+
+    let profit = (sell - buy) * qty;
+    let message = "";
+
+    // AI-style messages
+    if (profit > 0) {
+        message = "✅ PROFIT! Well done. You made $" + profit.toFixed(2) + ".\n";
+        if ((sell - buy)/buy*100 > 20) {
+            message += "🔥 Big gain! Consider taking some profit!";
+        } else {
+            message += "🙂 Modest profit, keep monitoring.";
+        }
+        output.style.background = "#e5ffe5"; // Green
+    } else if (profit < 0) {
+        message = "❌ LOSS! You lost $" + Math.abs(profit).toFixed(2) + ".\n";
+        if ((buy - sell)/buy*100 > 20) {
+            message += "⚠️ Significant loss! Learn from it!";
+        } else {
+            message += "😐 Small loss, stay careful.";
+        }
+        output.style.background = "#ffe5e5"; // Red
+    } else {
+        message = "😶 NO PROFIT NO LOSS. You broke even.";
+        output.style.background = "#e5e5ff"; // Blue
+    }
+
+    output.innerHTML = message.replace(/\n/g, "<br>");
+});
+</script>
+
+</body>
+</html>
